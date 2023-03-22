@@ -1,0 +1,49 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Users {
+  id        String @id @default(uuid())
+  email     String @unique
+  socket_id String @unique
+  name      String
+  avatar    String
+
+  ofChatRoons ChatRoons[] @relation("OfChatRoons")
+  toChatRoons ChatRoons[] @relation("ToChatRoons")
+
+  @@map("users")
+}
+
+model ChatRoons {
+  id String @id @default(uuid())
+
+  ofUserId String
+  toUserId String
+
+  ofUser Users @relation(name: "OfChatRoons", fields: [ofUserId], references: [id])
+  toUser Users @relation(name: "ToChatRoons", fields: [toUserId], references: [id])
+
+  Messages Messages[]
+
+  @@map("chat_roons")
+}
+
+model Messages {
+  id String @id @default(uuid())
+
+  to         String
+  text       String
+  created_at DateTime @default(now())
+
+  chatRoomId String
+
+  chatRoons ChatRoons @relation(fields: [chatRoomId], references: [id])
+
+  @@map("messages")
+}
